@@ -1,6 +1,10 @@
-@extends('layouts.app')
+<x-app-layout>
 
-@section('title', 'Refining: ' . ($task->title ?? 'Task'))
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ $task->title ?? 'Task Details' }}
+        </h2>
+    </x-slot>
 
 @php
     $oldTags = (array) ($task->tags ?? []);
@@ -9,7 +13,6 @@
     $labelClasses = "text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-3 block pl-2";
 @endphp
 
-@section('content')
 <div class="max-w-4xl mx-auto">
     @if ($errors->any())
         <div class="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-4">
@@ -34,7 +37,7 @@
         </a>
     </div>
 
-    <form action="{{ route('tasks.update', $task->id) }}" method="POST" class="space-y-8">
+    <form action="{{ route('tasks.update', $task->id) }}" method="POST" enctype="multipart/form-data" class="space-y-8">
         @csrf
         @method('PUT')
 
@@ -50,6 +53,20 @@
                 <div class="md:col-span-2">
                     <label class="{{ $labelClasses }}">Description</label>
                     <textarea name="description" rows="4" class="{{ $inputClasses }} resize-none" placeholder="Elaborate on the task objectives...">{{ old('description', $task->description) }}</textarea>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label for="images" class="{{ $labelClasses }}">Task Images (.jpg, .png)</label>
+                    <input type="file" id="images" name="images[]" accept=".jpg,.png" multiple class="{{ $inputClasses }}">
+                    @error('images') <p class="text-rose-600 text-xs font-bold mt-2">{{ $message }}</p> @enderror
+                    @error('images.*') <p class="text-rose-600 text-xs font-bold mt-2">{{ $message }}</p> @enderror
+                    @if($task->images->isNotEmpty())
+                        <div class="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
+                            @foreach($task->images as $image)
+                                <img src="{{ $image->image_url }}" alt="Task image" class="rounded-lg border border-slate-200 h-24 w-full object-cover">
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
 
                 <div>
@@ -148,4 +165,4 @@
         </div>
     </form>
 </div>
-@endsection
+</x-app-layout>

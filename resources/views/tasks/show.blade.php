@@ -1,6 +1,10 @@
-@extends('layouts.app')
+<x-app-layout>
 
-@section('title', $task->title ?? 'Task Details')
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ $task->title ?? 'Task Details' }}
+        </h2>
+    </x-slot>
 
 @php
     $priority = strtolower($task->priority ?? 'medium');
@@ -19,7 +23,6 @@
     $taskColor = $task->color ?? '#3b82f6';
 @endphp
 
-@section('content')
     <div class="mx-auto max-w-5xl">
         <div class="flex items-center justify-between mb-8">
             <a href="{{ route('tasks.index') }}" class="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-blue-600 transition-all group">
@@ -70,6 +73,19 @@
                         <div class="space-y-4">
                             <span class="{{ $labelClasses }}">Description</span>
                             <div class="text-xl leading-relaxed text-slate-600 font-medium">{{ $task->description ?? 'No description provided.' }}</div>
+                        </div>
+
+                        <div>
+                            <span class="text-[12px] font-black text-slate-400 uppercase tracking-widest block mt-4">Images</span>
+                            @if($task->images->isNotEmpty())
+                                <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    @foreach($task->images as $post)
+                                        <img src="{{ $post->image_url }}" alt="Task Image" class="rounded-lg border border-gray-100 shadow-sm max-h-96 w-full object-cover">
+                                    @endforeach
+                                </div>
+                            @else
+                                <p class="mt-3 text-sm text-slate-400 font-bold">No images uploaded for this task.</p>
+                            @endif
                         </div>
 
                         <div class="mt-12 flex flex-wrap gap-4">
@@ -229,4 +245,4 @@
             </div>
         </div>
     </div>
-@endsection
+</x-app-layout>

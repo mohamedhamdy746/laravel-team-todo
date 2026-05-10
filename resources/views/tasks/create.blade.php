@@ -1,6 +1,10 @@
-@extends('layouts.app')
+<x-app-layout>
 
-@section('title', 'Create New Task')
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ $task->title ?? 'Task Details' }}
+        </h2>
+    </x-slot>
 
 @php
     $priorities = [
@@ -22,7 +26,6 @@
         .'placeholder:text-slate-400 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 focus:outline-none transition-all duration-200';
 @endphp
 
-@section('content')
     <div class="mx-auto max-w-4xl py-6">
         @if ($errors->any())
             <div class="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-4">
@@ -76,6 +79,20 @@
                                     placeholder="Add context or specific steps...">{{ old('description') }}</textarea>
                                 @error('description') <p class="text-rose-600 text-xs font-bold mt-2">{{ $message }}</p> @enderror
                             </div>
+
+                                                        <div>
+                                                            <label for="images" class="text-[10px] font-black text-blue-600 uppercase tracking-widest block mb-4">Task Images (.jpg, .png)</label>
+                                                            <input type="file" name="images[]" id="images" accept=".jpg,.png" multiple>
+                                                            @error('images') <p class="text-rose-600 text-xs font-bold mt-2">{{ $message }}</p> @enderror
+                                                            @error('images.*') <p class="text-rose-600 text-xs font-bold mt-2">{{ $message }}</p> @enderror
+                                                        </div>
+
+                            <div class="space-y-4 pt-4">
+                                <label for="tags" class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Tags (comma separated)</label>
+                                <input type="text" id="tags" name="tags" value="{{ old('tags') }}"
+                                    class="w-full bg-slate-50/50 border border-slate-100 rounded-3xl p-6 text-lg text-slate-600 focus:ring-4 focus:ring-blue-50 focus:border-blue-200 transition-all placeholder:text-slate-300 outline-none"
+                                    placeholder="e.g. frontend, backend, urgent">
+                                @error('tags') <p class="text-rose-600 text-xs font-bold mt-2">{{ $message }}</p> @enderror
                         </div>
                     </div>
                 </div>
@@ -163,4 +180,4 @@
             </div>
         </form>
     </div>
-@endsection
+</x-app-layout>

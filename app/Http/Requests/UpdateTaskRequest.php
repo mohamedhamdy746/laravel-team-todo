@@ -34,6 +34,8 @@ class UpdateTaskRequest extends FormRequest
             'color' => ['nullable', 'string', 'max:20'],
             'tags' => ['nullable', 'string'],
             'labels' => ['nullable', 'string'],
+            'images' => ['nullable', 'array'],
+            'images.*' => ['file', 'mimes:jpg,png'],
         ];
     }
 
@@ -55,6 +57,8 @@ class UpdateTaskRequest extends FormRequest
             'creator_id.exists' => 'The selected creator is invalid.',
             'assignee_id.required' => 'Please select an assignee.',
             'assignee_id.exists' => 'The selected assignee is invalid.',
+            'images.array' => 'Images must be uploaded as a valid list of files.',
+            'images.*.mimes' => 'Only .jpg and .png images are allowed.',
         ];
     }
 }

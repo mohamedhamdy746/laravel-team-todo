@@ -6,6 +6,8 @@ use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Task;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
 {
@@ -37,7 +39,7 @@ class TaskController extends Controller
     public function show(int $id)
     {
         $task = Task::withTrashed()
-            ->with(['creator', 'assignee', 'comments.user'])
+            ->with(['creator', 'assignee', 'comments.user', 'images'])
             ->findOrFail($id);
 
         $users = User::select('id', 'name')->orderBy('name')->get();
@@ -47,7 +49,7 @@ class TaskController extends Controller
 
     public function edit(int $id)
     {
-        $task = Task::withTrashed()->findOrFail($id);
+        $task = Task::withTrashed()->with('images')->findOrFail($id);
         $users = User::select('id', 'name')->orderBy('name')->get();
 
         return view('tasks.edit', compact('task', 'users'));
@@ -76,6 +78,12 @@ class TaskController extends Controller
             'labels' => $this->normalizeCsvList($data['labels'] ?? null),
         ]);
 
+        if ($request->hasFile('images')) {
+            $task->loadMissing('images');
+            $this->deleteTaskImagesFromStorage($task);
+            $this->storeTaskImages($task, $request->file('images'));
+        }
+
         return redirect()->route('tasks.show', $id)->with('success', 'Task updated successfully');
     }
 
@@ -83,7 +91,7 @@ class TaskController extends Controller
     {
         $data = $request->validated();
 
-        Task::create([
+        $task = Task::create([
             'title' => $data['title'],
             'description' => $data['description'],
             'due_date' => $data['due_date'],
@@ -101,12 +109,17 @@ class TaskController extends Controller
             'subtasks' => [],
         ]);
 
+        if ($request->hasFile('images')) {
+            $this->storeTaskImages($task, $request->file('images'));
+        }
+
         return redirect()->route('tasks.index')->with('success', 'Task created successfully');
     }
 
     public function destroy(int $id)
     {
-        $task = Task::findOrFail($id);
+        $task = Task::with('images')->findOrFail($id);
+        $this->deleteTaskImagesFromStorage($task);
         $task->delete();
 
         return redirect()->route('tasks.index')->with('success', 'Task deleted');
@@ -133,5 +146,28 @@ class TaskController extends Controller
             ->filter()
             ->values()
             ->all();
+    }
+
+    private function storeTaskImages(Task $task, array $images): void
+    {
+        foreach ($images as $image) {
+            if (! $image instanceof UploadedFile) {
+                continue;
+            }
+
+            $path = $image->store('tasks', 'public');
+            $task->images()->create(['image' => $path]);
+        }
+    }
+
+    private function deleteTaskImagesFromStorage(Task $task): void
+    {
+        foreach ($task->images as $image) {
+            if ($image->image) {
+                Storage::disk('public')->delete($image->image);
+            }
+        }
+
+        $task->images()->delete();
     }
 }

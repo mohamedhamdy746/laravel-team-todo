@@ -1,8 +1,11 @@
-@extends('layouts.app')
+<x-app-layout>
 
-@section('title', 'Control Center')
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ __('All Tasks') }}
+        </h2>
+    </x-slot>
 
-@section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div class="space-y-2">
@@ -67,6 +70,9 @@
                     <h3 class="text-2xl font-black text-slate-900 leading-tight mb-4 group-hover:text-blue-600 transition-colors">
                         <a href="{{ route('tasks.show', $task->id) }}">{{ $task->title }}</a>
                     </h3>
+                    <p class="text-xs text-slate-400 font-mono mt-2">
+                        {{ $task->slug }}
+                    </p>
 
                     <p class="text-slate-500 font-medium line-clamp-3 text-sm leading-relaxed mb-4">
                         {{ $task->description ?? 'No context provided.' }}
@@ -145,4 +151,4 @@
         </div>
     @endif
 </div>
-@endsection
+</x-app-layout>
