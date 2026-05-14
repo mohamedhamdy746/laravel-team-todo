@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Auth\SocialAuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TaskCommentController;
 use App\Http\Controllers\TaskController;
@@ -13,10 +14,22 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+// Social OAuth — login flow (guest)
+Route::prefix('auth/social')->name('social.')->group(function () {
+    Route::get('{provider}', [SocialAuthController::class, 'redirectToLogin'])->name('redirect');
+    Route::get('{provider}/callback', [SocialAuthController::class, 'handleCallback'])->name('callback');
+});
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Social account connect / disconnect (authenticated users)
+    Route::prefix('profile/social')->name('profile.social.')->group(function () {
+        Route::get('{provider}/connect', [SocialAuthController::class, 'redirectToConnect'])->name('connect');
+        Route::delete('{provider}', [SocialAuthController::class, 'disconnect'])->name('disconnect');
+    });
 
     // Tasks routes
     Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
@@ -34,5 +47,4 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
-
 
